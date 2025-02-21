@@ -1,0 +1,6 @@
+@Controle_Pessoal_HostAddress = http://localhost:5119
+
+GET {{Controle_Pessoal_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
