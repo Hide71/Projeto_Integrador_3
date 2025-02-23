@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Controle_Pessoal.Context;
 using Controle_Pessoal.Entities;
+using Controle_Pessoal.Models;
 
 namespace Controle_Pessoal.Controllers
 {
@@ -28,57 +29,63 @@ namespace Controle_Pessoal.Controllers
         [FromRoute]int id){
             var users = await context.Users
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.id == id);
+            .FirstOrDefaultAsync(x => x.Id == id);
             return users == null? NotFound(): Ok(users);
         }
         [HttpPost("user")]
-        public async Task<IActionResult>PostAsync([FromServices] AppDbContext context,
-        [FromBody] User user){
-            if (!ModelState.IsValid){
+        public async Task<IActionResult>PostAsync([FromServices] AppDbContext context, [FromBody] CreateUserRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
                 return BadRequest();
-
             }
 
             try
             {
+                var user = new User
+                {
+                    Username = request.Username,
+                    Email = request.Email,
+                    Url = request.Url,
+                };
+
                 await context.AddAsync(user);
                 await context.SaveChangesAsync();
-                return Created($"v1/users/{user.id}", user);
-                
+                return Created($"v1/users/{user.Id}", user);
             }
-            catch (Exception e)
+            catch (System.Exception)
             {
+            
                 return BadRequest();
                 
             }
-             
-
-
         }
+
         [HttpPut("user/{id}")]
-        public async Task<IActionResult>PutAsync([FromServices] AppDbContext context,
-        [FromBody] User user, [FromRoute] int id){
+        public async Task<IActionResult>PutAsync(
+            [FromServices] AppDbContext context,
+            [FromBody] UpdateUserRequest request,
+            [FromRoute] int id)
+        {
             if (!ModelState.IsValid){
                 return BadRequest();
             }
-            var _user = await context.Users
-            .FirstOrDefaultAsync(x => x.id==id);
+            var user = await context.Users
+            .FirstOrDefaultAsync(x => x.Id==id);
 
-            if(_user == null){
+            if(user == null){
                 return NotFound();
             }
             try
             {
-                _user.username = user.username;
-                _user.email = user.email;
-                _user.url = user.url;
-                _user.expenses = user.expenses;
-                context.Users.Update(_user);
+                user.Username = request.Username;
+                user.Email = request.Email;
+                user.Url = request.Url;
                 await context.SaveChangesAsync();
-                return Ok(_user);
+                return Ok(user);
                 
             }
-            catch (Exception e)
+            catch (System.Exception )
             {
                 return BadRequest();
         
@@ -88,7 +95,7 @@ namespace Controle_Pessoal.Controllers
         [HttpDelete("user/{id}")]
         public async Task<IActionResult>DeleteAsync([FromServices] AppDbContext context, 
         [FromRoute] int id){
-            var user = await context.Users.FirstOrDefaultAsync(x => x.id == id);
+            var user = await context.Users.FirstOrDefaultAsync(x => x.Id == id);
             try
             {
                 context.Users.Remove(user);
@@ -96,7 +103,7 @@ namespace Controle_Pessoal.Controllers
                 return Ok();
                 
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return BadRequest();
             }

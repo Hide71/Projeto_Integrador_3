@@ -5,11 +5,10 @@ namespace Controle_Pessoal.Entities
 {
     public class User
     {
-        public int id { get; set; }
-        [Required]
-        public string username { get; set; }
-        public string email { get; set; }
-        public string url { get; set; }
-        public ICollection<Expense> expenses { get; set; }
+        public int Id { get; set; }
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public string Url { get; set; }
+        public ICollection<Expense> Expenses { get; set; }
     }
 }

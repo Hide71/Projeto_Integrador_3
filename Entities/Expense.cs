@@ -4,15 +4,14 @@ namespace Controle_Pessoal.Entities
 {
     public class Expense
     {
-        public int id { get; set; }
-        [Required]
-        public string description { get; set; }
-        public double amount { get; set; }
-        public DateTime date { get; set; }
-        public int userId { get; set;}               
-        public User user { get; set; }
+        public int Id { get; set; }
+        public string Description { get; set; }
+        public decimal Amount { get; set; }
+        public DateOnly Date { get; set; }
+        public int UserId { get; set;}               
+        public User User { get; set; }
 
-         public int categoryId { get; set;}               
-        public Category category { get; set; }
+         public int CategoryId { get; set;}               
+        public Category Category { get; set; }
     }
 }
