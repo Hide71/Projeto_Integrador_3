@@ -12,10 +12,10 @@ using Controle_Pessoal.Models;
 namespace Controle_Pessoal.Controllers
 {
     [ApiController]
-    [Route("v1/expenses")]
+    [Route("v1")]
     public class ExpenseController : ControllerBase
     {
-        [HttpPost]
+        [HttpPost("expenses")]
         public async Task<IActionResult> PostAsync(
             [FromServices] AppDbContext context,
             [FromBody] CreateExpenseRequest request)
@@ -47,13 +47,66 @@ namespace Controle_Pessoal.Controllers
            
         }
 
-        [HttpGet]
+        [HttpGet("expenses")]
         public async Task<IActionResult> Get(
-            [FromServices] AppDbContext context
-        )
+            [FromServices] AppDbContext context)
         {
             var expenses = await context.Expenses.AsNoTracking().ToListAsync();
             return Ok(expenses);
         }
+        [HttpGet("expenses/{id}")]
+        public async Task<IActionResult> GetByIdAsync(
+            [FromServices] AppDbContext context, 
+            [FromRoute] int id) {
+            var expenses = await context.Expenses.AsNoTracking().FirstOrDefaultAsync(x=> x.Id == id);
+            return  expenses == null? NotFound() : Ok(expenses);
+        }
+        [HttpPut("expenses/{id}")]
+        public async Task<IActionResult> PutAsync(
+            [FromServices] AppDbContext context,
+            [FromRoute] int id,
+            [FromBody] UpdateExpenseRequest request){
+                if(!ModelState.IsValid){
+                    return BadRequest();
+                }
+                var expense = await context.Expenses.FirstOrDefaultAsync(x => x.Id == id);
+                if(expense == null){
+                    return NotFound();
+                }
+                try
+                {
+                    expense.Description = request.Description;
+                    expense.Amount = request.Amount;
+                    expense.Date = request.Date;
+                    expense.UserId = request.UserId;
+                    expense.CategoryId = request.CategoryId;
+                    await context.SaveChangesAsync();
+                    return Ok(expense);
+
+                }
+                catch (Exception)
+                {
+                    
+                    return BadRequest();
+                }
+            }
+             [HttpDelete("expenses/{id}")]
+        public async Task<IActionResult> DeleteAsync(
+            [FromServices] AppDbContext context,
+            [FromRoute] int id)
+        {
+            var expense = await context.Expenses.FirstOrDefaultAsync(x => x.Id == id);
+            try
+            {
+                context.Expenses.Remove(expense);
+                await context.SaveChangesAsync();
+                return Ok("Deletado com sucesso!");
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+    
     }
 }

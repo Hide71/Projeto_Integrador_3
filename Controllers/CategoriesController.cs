@@ -68,7 +68,7 @@ namespace Controle_Pessoal.Controllers
         [HttpPut("category/{id}")]
         public async Task<IActionResult> PutAsync(
             [FromServices] AppDbContext context,
-            [FromBody] Category category,
+            [FromBody] UpdateCategoryRequest request,
             [FromRoute] int id)
         {
             
@@ -77,20 +77,18 @@ namespace Controle_Pessoal.Controllers
                 return BadRequest();
             }
 
-            var existingCategory = await context.Categories.FirstOrDefaultAsync(x => x.Id==id);
+            var category = await context.Categories.FirstOrDefaultAsync(x => x.Id==id);
 
-            if(existingCategory == null)
+            if(category == null)
             {
                 return NotFound();
             }
 
             try
             {
-                existingCategory.CategoryName = category.CategoryName;
-                existingCategory.Expenses = category.Expenses;
-                context.Categories.Update(existingCategory);
+                category.CategoryName = request.CategoryName;
                 await context.SaveChangesAsync();
-                return Ok(existingCategory);
+                return Ok(category);
             }
             catch (Exception)
             {
@@ -108,7 +106,7 @@ namespace Controle_Pessoal.Controllers
             {
                 context.Categories.Remove(category);
                 await context.SaveChangesAsync();
-                return Ok();                
+                return Ok("Deletado com sucesso!");               
             }
             catch (Exception)
             {

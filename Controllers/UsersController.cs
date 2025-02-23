@@ -100,7 +100,7 @@ namespace Controle_Pessoal.Controllers
             {
                 context.Users.Remove(user);
                 await context.SaveChangesAsync();
-                return Ok();
+                return Ok("Deletado com sucesso!");
                 
             }
             catch (Exception)
