@@ -34,6 +34,7 @@ namespace Controle_Pessoal.Controllers
                     Date = request.Date,
                     UserId = request.UserId,
                     CategoryId = request.CategoryId,
+                    AccountId = request.AccountId,
                 };
                 
                 await context.AddAsync(expense);
@@ -80,6 +81,7 @@ namespace Controle_Pessoal.Controllers
                     expense.Date = request.Date;
                     expense.UserId = request.UserId;
                     expense.CategoryId = request.CategoryId;
+                    expense.AccountId = request.AccountId;
                     await context.SaveChangesAsync();
                     return Ok(expense);
 

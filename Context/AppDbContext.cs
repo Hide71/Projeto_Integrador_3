@@ -13,6 +13,7 @@ namespace Controle_Pessoal.Context
         public DbSet<User> Users { get; set; }
         public DbSet<Expense> Expenses { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<Account> Accounts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,6 +36,11 @@ namespace Controle_Pessoal.Context
             .HasOne(a => a.Category)
             .WithMany(b => b.Expenses)
             .HasForeignKey(b => b.CategoryId);
+
+           modelBuilder.Entity<Expense>()
+            .HasOne(a => a.Account)
+            .WithMany(b => b.Expenses)
+            .HasForeignKey(b => b.AccountId);
         }
     }
 }
