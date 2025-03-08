@@ -17,21 +17,30 @@ namespace Controle_Pessoal.Controllers
     {
         [HttpGet]
         [Route("user")]
-        public async Task<IActionResult>GetAsync([FromServices] AppDbContext context){
+        public async Task<IActionResult> GetAsync([FromServices] AppDbContext context)
+        {
             var users = await context.Users
-            .AsNoTracking()
-            .ToListAsync();
+                .AsNoTracking()
+                .ToListAsync();
+
             return Ok(users);
         }
+        
         [HttpGet]
         [Route("user/{id}")]
-        public async Task<IActionResult>GetByIdAsync([FromServices] AppDbContext context, 
-        [FromRoute]int id){
+        public async Task<IActionResult> GetByIdAsync(
+            [FromServices] AppDbContext context, 
+            [FromRoute]int id)
+        {
             var users = await context.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id);
-            return users == null? NotFound(): Ok(users);
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            return users == null
+                ? NotFound()
+                : Ok(users);
         }
+        
         [HttpPost("user")]
         public async Task<IActionResult>PostAsync([FromServices] AppDbContext context, [FromBody] CreateUserRequest request)
         {
@@ -67,15 +76,19 @@ namespace Controle_Pessoal.Controllers
             [FromBody] UpdateUserRequest request,
             [FromRoute] int id)
         {
-            if (!ModelState.IsValid){
+            if (!ModelState.IsValid)
+            {
                 return BadRequest();
             }
-            var user = await context.Users
-            .FirstOrDefaultAsync(x => x.Id==id);
 
-            if(user == null){
+            var user = await context.Users
+                .FirstOrDefaultAsync(x => x.Id==id);
+
+            if(user == null)
+            {
                 return NotFound();
             }
+
             try
             {
                 user.Username = request.Username;
@@ -83,37 +96,34 @@ namespace Controle_Pessoal.Controllers
                 user.Url = request.Url;
                 await context.SaveChangesAsync();
                 return Ok(user);
-                
             }
             catch (System.Exception )
             {
-                return BadRequest();
-        
+                return BadRequest();        
             }
 
         }
         [HttpDelete("user/{id}")]
-        public async Task<IActionResult>DeleteAsync([FromServices] AppDbContext context, 
-        [FromRoute] int id){
+        public async Task<IActionResult> DeleteAsync(
+            [FromServices] AppDbContext context, 
+            [FromRoute] int id)
+        {
             var user = await context.Users.FirstOrDefaultAsync(x => x.Id == id);
+            if (user is null)
+            {
+                return NotFound();
+            }
+
             try
             {
                 context.Users.Remove(user);
                 await context.SaveChangesAsync();
-                return Ok("Deletado com sucesso!");
-                
+                return Ok("Deletado com sucesso!");   
             }
             catch (Exception)
             {
                 return BadRequest();
             }
-            
-
         }
-
-        
-        
-
-   
     }
 }

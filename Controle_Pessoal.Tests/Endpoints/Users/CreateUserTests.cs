@@ -1,5 +1,6 @@
 ﻿using Controle_Pessoal.Tests.Fixtures;
 using System.Net;
+using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 
 namespace Controle_Pessoal.Tests.Endpoints.Users
@@ -7,7 +8,7 @@ namespace Controle_Pessoal.Tests.Endpoints.Users
     [Trait("Api", "Users - Create")]
     public class CreateUserTests : ApiTest
     {
-        public CreateUserTests(ApiFixture monnyApiFixture) : base(monnyApiFixture)
+        public CreateUserTests(ApiFixture apiFixture) : base(apiFixture)
         {
         }
 
@@ -15,7 +16,7 @@ namespace Controle_Pessoal.Tests.Endpoints.Users
         public async Task DeveCriarUsuarioERetornarCreated_QuandoRequisicaoForValida()
         {
             // Arrange
-            var request= new
+            var request = new
             {
                 username = Faker.Person.UserName,
                 email = Faker.Person.Email,
@@ -27,7 +28,14 @@ namespace Controle_Pessoal.Tests.Endpoints.Users
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, httpResponse.StatusCode);
+            Assert.NotNull(httpResponse.Headers.Location);
             Assert.Equal("v1/users/1", httpResponse.Headers.Location.ToString());
+
+            var createdUser = await Db.Users.FirstAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(1, createdUser.Id);
+            Assert.Equal(request.username, createdUser.Username);
+            Assert.Equal(request.email, createdUser.Email);
+            Assert.Equal(request.url, createdUser.Url);
         }
 
         [Fact]

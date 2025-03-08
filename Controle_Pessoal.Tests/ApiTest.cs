@@ -11,15 +11,15 @@ namespace Controle_Pessoal.Tests.Fixtures
         IAsyncLifetime
     {
         private readonly IServiceScope _scope;
-        private readonly ApiFixture _monnyApiFixture;
+        private readonly ApiFixture _apiFixture;
 
-        protected ApiTest(ApiFixture monnyApiFixture)
+        protected ApiTest(ApiFixture apiFixture)
         {
-            _monnyApiFixture = monnyApiFixture;
-            _scope = _monnyApiFixture.Services.CreateScope();
+            _apiFixture = apiFixture;
+            _scope = _apiFixture.Services.CreateScope();
 
             Faker = new Faker("pt_BR");
-            ApiClient = _monnyApiFixture.CreateClient();
+            ApiClient = _apiFixture.CreateClient();
             ServiceProvider = _scope.ServiceProvider;
             Db = ServiceProvider.GetRequiredService<AppDbContext>();
         }
@@ -32,10 +32,16 @@ namespace Controle_Pessoal.Tests.Fixtures
 
         protected IServiceProvider ServiceProvider { get; }
 
+        protected static Faker<T> CreateFaker<T>()
+            where T:class
+        {
+            return new Faker<T>("pt_BR");
+        }
+
         public async ValueTask InitializeAsync()
         {
-            await using var conn = new NpgsqlConnection(_monnyApiFixture.DatabaseServerFixture.ConnectionString);
-            await conn.ExecuteAsync($"""CREATE DATABASE "{_monnyApiFixture.DatabaseName}" TEMPLATE "{_monnyApiFixture.DatabaseServerFixture.TemplateDataBaseName}";""");
+            await using var conn = new NpgsqlConnection(_apiFixture.DatabaseServerFixture.ConnectionString);
+            await conn.ExecuteAsync($"""CREATE DATABASE "{_apiFixture.DatabaseName}" TEMPLATE "{_apiFixture.DatabaseServerFixture.TemplateDataBaseName}";""");
         }
 
         public async ValueTask DisposeAsync()
