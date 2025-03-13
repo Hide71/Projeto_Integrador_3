@@ -10,8 +10,16 @@ namespace Controle_Pessoal
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
 
+            // Add services to the container.
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowReactApp",
+                    builder => builder
+                        .WithOrigins("http://localhost:5173")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod());
+            });
             builder.Services.AddControllers();
             builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -32,6 +40,7 @@ namespace Controle_Pessoal
 
             app.UseAuthorization();
             app.UseRouting();
+            app.UseCors("AllowReactApp");
 
             app.MapControllers();
 
