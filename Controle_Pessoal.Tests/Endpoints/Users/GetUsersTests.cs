@@ -22,19 +22,22 @@ namespace Controle_Pessoal.Tests.Endpoints.Users
                 {
                     Username = Faker.Person.UserName,
                     Email = Faker.Person.Email,
-                    Url = Faker.Person.Website
+                    Url = Faker.Person.Website,
+                    Password = Faker.Internet.Password(),
                 },
                 new()
                 {
                     Username = Faker.Person.UserName,
                     Email = Faker.Person.Email,
-                    Url = Faker.Person.Website
+                    Url = Faker.Person.Website,
+                    Password = Faker.Internet.Password(),
                 },
                 new()
                 {
                     Username = Faker.Person.UserName,
                     Email = Faker.Person.Email,
-                    Url = Faker.Person.Website
+                    Url = Faker.Person.Website,
+                    Password = Faker.Internet.Password(),
                 },
             ];
 

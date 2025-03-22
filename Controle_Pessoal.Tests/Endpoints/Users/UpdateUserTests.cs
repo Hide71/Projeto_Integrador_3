@@ -22,6 +22,7 @@ public class UpdateUserTests : ApiTest
             .RuleFor(x => x.Username, faker => faker.Person.UserName)
             .RuleFor(x => x.Email, faker => faker.Person.Email)
             .RuleFor(x => x.Url, faker => faker.Person.Website)
+            .RuleFor(x => x.Password, faker => faker.Internet.Password())
             .Generate();
 
         Db.Users.AddRange(user);

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Controle_Pessoal.Context;
 using Controle_Pessoal.Entities;
 using Controle_Pessoal.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Controle_Pessoal.Controllers
 {

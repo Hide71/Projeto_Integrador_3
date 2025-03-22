@@ -25,7 +25,10 @@ namespace Controle_Pessoal.Tests.Fixtures
 
             var configurationValues = new Dictionary<string, string>
             {
-                { "ConnectionStrings:DefaultConnection", databaseConnectionString }
+                { "ConnectionStrings:DefaultConnection", databaseConnectionString },
+                { "JwtSettings:Key", "rEtcZr3Mhyo8i9ZPhVne4CggYYwrBWUrLLKomVFKrGACyhhMtBpf3gTk9m3LrQRv8M4BKq" },
+                { "JwtSettings:Audience", "integration_tests" },
+                { "JwtSettings:Issuer", "integration_tests" },
             };  
 
             var configuration = new ConfigurationBuilder()
@@ -33,7 +36,7 @@ namespace Controle_Pessoal.Tests.Fixtures
                 .Build();
 
             builder
-                //.UseEnvironment(EnvironmentDefaults.IntegrationTest)
+                .UseEnvironment("IntegrationTest")
                 .UseConfiguration(configuration)
                 .ConfigureAppConfiguration(c =>
                 {

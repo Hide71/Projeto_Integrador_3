@@ -22,6 +22,7 @@ public class GetUserTests : ApiTest
             .RuleFor(x => x.Username, faker => faker.Person.UserName)
             .RuleFor(x => x.Email, faker => faker.Person.Email)
             .RuleFor(x => x.Url, faker => faker.Person.Website)
+            .RuleFor(x => x.Password, faker => faker.Internet.Password())
             .Generate(3);
 
         Db.Users.AddRange(users);
@@ -48,6 +49,7 @@ public class GetUserTests : ApiTest
             .RuleFor(x => x.Username, faker => faker.Person.UserName)
             .RuleFor(x => x.Email, faker => faker.Person.Email)
             .RuleFor(x => x.Url, faker => faker.Person.Website)
+            .RuleFor(x => x.Password, faker => faker.Internet.Password())
             .Generate(2);
 
         Db.Users.AddRange(users);

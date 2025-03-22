@@ -24,6 +24,7 @@ namespace Controle_Pessoal.Tests.Fixtures
                 .WithTmpfsMount("/var/lib/pg/data")
                 .WithCommand("--log_statement=all")
                 .WithPortBinding(5430, 5432)
+                .WithReuse(true)
                 .Build();
 
             TemplateDataBaseName = Guid.NewGuid().ToString();

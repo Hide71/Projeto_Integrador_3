@@ -2,6 +2,7 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
+using Controle_Pessoal.Auth;
 
 namespace Controle_Pessoal.Tests.Endpoints.Users
 {
@@ -20,7 +21,7 @@ namespace Controle_Pessoal.Tests.Endpoints.Users
             {
                 username = Faker.Person.UserName,
                 email = Faker.Person.Email,
-                url = Faker.Person.Website
+                password = Faker.Internet.Password()
             };
 
             // Act
@@ -35,7 +36,8 @@ namespace Controle_Pessoal.Tests.Endpoints.Users
             Assert.Equal(1, createdUser.Id);
             Assert.Equal(request.username, createdUser.Username);
             Assert.Equal(request.email, createdUser.Email);
-            Assert.Equal(request.url, createdUser.Url);
+            Assert.Null(createdUser.Url);
+            Assert.Equal(PasswordHasher.HashPassword(request.password), createdUser.Password);
         }
 
         [Fact]

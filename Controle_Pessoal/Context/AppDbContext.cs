@@ -19,6 +19,10 @@ namespace Controle_Pessoal.Context
         {
            base.OnModelCreating(modelBuilder);
 
+           modelBuilder.Entity<User>()
+                .Property(p => p.Url)
+                .IsRequired(false);
+
            modelBuilder.Entity<Expense>()
             .Property(x => x.Description).IsRequired();
 

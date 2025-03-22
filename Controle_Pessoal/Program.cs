@@ -1,6 +1,11 @@
 
+using System.Configuration;
+using System.Text;
+using Controle_Pessoal.Auth;
 using Controle_Pessoal.Context;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Controle_Pessoal
 {
@@ -26,6 +31,25 @@ namespace Controle_Pessoal
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddSingleton<TokenGenerator>();
+
+            builder.Services.Configure<JwtParameters>(builder.Configuration.GetSection("JwtSettings"));
+
+            var jwtParameters = builder.Configuration
+                .GetSection("JwtSettings")
+                .Get<JwtParameters>();
+
+            builder.Services.AddAuthorization();
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(config =>
+                {
+                    config.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtParameters.key)),
+                        ValidIssuer = jwtParameters.Issuer,
+                        ValidAudience = jwtParameters.Audience
+                    };
+                });
 
             var app = builder.Build();
 
@@ -36,16 +60,23 @@ namespace Controle_Pessoal
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
-            app.UseAuthorization();
             app.UseRouting();
             app.UseCors("AllowReactApp");
+            app.UseAuthentication();
+            app.UseAuthorization();
 
-            app.MapControllers();
+            if (app.Environment.EnvironmentName == "IntegrationTest")
+            {
+                app.MapControllers().AllowAnonymous();
+            }
+            else
+            {
+                app.MapControllers();
+            }
 
             app.Run();
-
         }
     }
 }
