@@ -48,35 +48,16 @@ namespace Controle_Pessoal.Controllers
                 return BadRequest();
             }
 
-            User? user;
-            if (request.Name == "googleAuth" && request.Email == "googleAuth")
+            try
             {
-                var googleAccessToken = request.Password;
-                var googleAccessTokenInfo = await GoogleJsonWebSignature.ValidateAsync(googleAccessToken, new GoogleJsonWebSignature.ValidationSettings
-                {
-                    Audience = ["313667901167-d9cq0716r9ioll9uqdmf2qfa8nop0juv.apps.googleusercontent.com"]
-                });
-                user = new User
-                {
-                    Name = googleAccessTokenInfo.Name,
-                    Email = googleAccessTokenInfo.Email,
-                    Password = googleAccessTokenInfo.Subject,
-                    ProfilePicture = googleAccessTokenInfo.Picture,
-                };
-            }
-            else
-            {
-                user = new User
+                var user = new User
                 {
                     Name = request.Name,
                     Email = request.Email,
                     Password = PasswordHasher.HashPassword(request.Password),
                     ProfilePicture = $"https://ui-avatars.com/api/?name={request.Name}&length=2&size=256&font-size=0.6&rounded=true&bold=true&background=68b7e0&color=941c80"
                 };
-            }
 
-            try
-            {
                 var userExists = await context.Users
                     .AsNoTracking()
                     .AnyAsync(x => x.Email == user.Email);
@@ -98,7 +79,6 @@ namespace Controle_Pessoal.Controllers
             }
             catch (Exception)
             {
-
                 return BadRequest();
             }
         }
