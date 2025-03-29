@@ -1,11 +1,9 @@
-
-using System.Configuration;
-using System.Text;
 using Controle_Pessoal.Auth;
 using Controle_Pessoal.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Controle_Pessoal
 {
@@ -28,10 +26,12 @@ namespace Controle_Pessoal
             builder.Services.AddControllers();
             builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddSingleton<TokenGenerator>();
+            builder.Services.AddSingleton<IGoogleAccessTokenManager, GoogleAccessTokenManager>();
 
             builder.Services.Configure<JwtParameters>(builder.Configuration.GetSection("JwtSettings"));
 

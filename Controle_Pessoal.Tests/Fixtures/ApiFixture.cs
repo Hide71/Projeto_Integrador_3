@@ -1,6 +1,10 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Controle_Pessoal.Auth;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 
 namespace Controle_Pessoal.Tests.Fixtures
 {
@@ -29,7 +33,7 @@ namespace Controle_Pessoal.Tests.Fixtures
                 { "JwtSettings:Key", "rEtcZr3Mhyo8i9ZPhVne4CggYYwrBWUrLLKomVFKrGACyhhMtBpf3gTk9m3LrQRv8M4BKq" },
                 { "JwtSettings:Audience", "integration_tests" },
                 { "JwtSettings:Issuer", "integration_tests" },
-            };  
+            };
 
             var configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(configurationValues!)
@@ -42,6 +46,10 @@ namespace Controle_Pessoal.Tests.Fixtures
                 {
                     c.Sources.Clear();
                     c.AddInMemoryCollection(configurationValues!).Build();
+                })
+                .ConfigureTestServices(services =>
+                {
+                    services.AddSingleton(x => Substitute.For<IGoogleAccessTokenManager>());
                 });
         }
     }

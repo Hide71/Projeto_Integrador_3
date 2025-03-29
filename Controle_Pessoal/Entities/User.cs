@@ -7,6 +7,7 @@
         public string Password { get; set; }
         public string Email { get; set; }
         public string ProfilePicture { get; set; }
+        public string? GoogleId { get; set; }
         public ICollection<Expense> Expenses { get; set; }
     }
 }

@@ -147,6 +147,7 @@ namespace Controle_Pessoal.Controllers
             [FromBody] UserLoginRequest request,
             [FromServices] AppDbContext context,
             [FromServices] TokenGenerator tokenGenerator,
+            [FromServices] IGoogleAccessTokenManager googleAccessTokenManager,
             CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
@@ -160,10 +161,8 @@ namespace Controle_Pessoal.Controllers
                 try
                 {
                     var googleAccessToken = request.Password;
-                    var googleAccessTokenInfo = await GoogleJsonWebSignature.ValidateAsync(googleAccessToken, new GoogleJsonWebSignature.ValidationSettings
-                    {
-                        Audience = ["313667901167-d9cq0716r9ioll9uqdmf2qfa8nop0juv.apps.googleusercontent.com"]
-                    });
+                    var googleAccessTokenInfo = await googleAccessTokenManager.ParseAndValidateAsync(googleAccessToken);
+
                     user = await context.Users
                         .AsNoTracking()
                         .FirstOrDefaultAsync(u => u.Email == googleAccessTokenInfo.Email, cancellationToken);
@@ -176,6 +175,7 @@ namespace Controle_Pessoal.Controllers
                             Email = googleAccessTokenInfo.Email,
                             Password = googleAccessTokenInfo.Subject,
                             ProfilePicture = googleAccessTokenInfo.Picture,
+                            GoogleId = googleAccessTokenInfo.Subject,
                         };
 
                         context.Add(user);

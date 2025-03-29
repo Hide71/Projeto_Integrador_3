@@ -16,30 +16,12 @@ namespace Controle_Pessoal.Tests.Endpoints.Users
         public async Task DeveRetornarTodosOsUsuarios()
         {
             // Arrange
-            User[] users =
-            [
-                new()
-                {
-                    Name = Faker.Person.UserName,
-                    Email = Faker.Person.Email,
-                    ProfilePicture = Faker.Person.Website,
-                    Password = Faker.Internet.Password(),
-                },
-                new()
-                {
-                    Name = Faker.Person.UserName,
-                    Email = Faker.Person.Email,
-                    ProfilePicture = Faker.Person.Website,
-                    Password = Faker.Internet.Password(),
-                },
-                new()
-                {
-                    Name = Faker.Person.UserName,
-                    Email = Faker.Person.Email,
-                    ProfilePicture = Faker.Person.Website,
-                    Password = Faker.Internet.Password(),
-                },
-            ];
+            var users = CreateFaker<User>()
+                .RuleFor(x => x.Name, faker => faker.Person.UserName)
+                .RuleFor(x => x.Email, faker => faker.Person.Email)
+                .RuleFor(x => x.ProfilePicture, faker => faker.Person.Website)
+                .RuleFor(x => x.Password, faker => faker.Internet.Password())
+                .Generate(3);
 
             Db.Users.AddRange(users);
             await Db.SaveChangesAsync(TestContext.Current.CancellationToken);

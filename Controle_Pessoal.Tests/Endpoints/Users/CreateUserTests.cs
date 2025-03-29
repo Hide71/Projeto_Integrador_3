@@ -3,6 +3,7 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Controle_Pessoal.Auth;
+using Controle_Pessoal.Entities;
 
 namespace Controle_Pessoal.Tests.Endpoints.Users
 {
@@ -19,7 +20,7 @@ namespace Controle_Pessoal.Tests.Endpoints.Users
             // Arrange
             var request = new
             {
-                username = Faker.Person.UserName,
+                name = Faker.Person.UserName,
                 email = Faker.Person.Email,
                 password = Faker.Internet.Password()
             };
@@ -34,10 +35,42 @@ namespace Controle_Pessoal.Tests.Endpoints.Users
 
             var createdUser = await Db.Users.FirstAsync(TestContext.Current.CancellationToken);
             Assert.Equal(1, createdUser.Id);
-            Assert.Equal(request.username, createdUser.Name);
+            Assert.Equal(request.name, createdUser.Name);
             Assert.Equal(request.email, createdUser.Email);
-            Assert.Null(createdUser.ProfilePicture);
+            Assert.NotEmpty(createdUser.ProfilePicture);
             Assert.Equal(PasswordHasher.HashPassword(request.password), createdUser.Password);
+        }
+
+        [Fact]
+        public async Task DeveRetornarBadRequest_QuandoJaExistirUsuarioComOEmailInformado()
+        {
+            // Arrange
+            var user = CreateFaker<User>()
+                .RuleFor(x => x.Name, faker => faker.Person.UserName)
+                .RuleFor(x => x.Email, faker => faker.Person.Email)
+                .RuleFor(x => x.ProfilePicture, faker => faker.Person.Website)
+                .RuleFor(x => x.Password, faker => faker.Internet.Password())
+                .Generate();
+
+            Db.Users.AddRange(user);
+            await Db.SaveChangesAsync(TestContext.Current.CancellationToken);
+            Db.ChangeTracker.Clear();
+
+            var request = new
+            {
+                name = Faker.Person.UserName,
+                email = user.Email,
+                password = Faker.Internet.Password()
+            };
+
+            // Act
+            var httpResponse = await ApiClient.PostAsJsonAsync("/v1/user", request, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, httpResponse.StatusCode);
+            
+            var responseBody = await httpResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.Equal("Já existe um usuário cadastrado com o e-mail informado", responseBody);
         }
 
         [Fact]
