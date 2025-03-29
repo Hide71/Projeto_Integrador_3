@@ -184,10 +184,24 @@ namespace Controle_Pessoal.Controllers
                     user = await context.Users
                         .AsNoTracking()
                         .FirstOrDefaultAsync(u => u.Email == googleAccessTokenInfo.Email, cancellationToken);
+
+                    if (user is null)
+                    {
+                        user = new User
+                        {
+                            Name = googleAccessTokenInfo.Name,
+                            Email = googleAccessTokenInfo.Email,
+                            Password = googleAccessTokenInfo.Subject,
+                            ProfilePicture = googleAccessTokenInfo.Picture,
+                        };
+
+                        context.Add(user);
+                        await context.SaveChangesAsync(cancellationToken);
+                    }
                 }
                 catch (InvalidJwtException)
                 {
-                    return Unauthorized("Access Token do Google inválido");
+                    return BadRequest("Access Token do Google inválido");
                 }
             }
             else
@@ -196,11 +210,11 @@ namespace Controle_Pessoal.Controllers
                 user = await context.Users
                     .AsNoTracking()
                     .FirstOrDefaultAsync(u => u.Email == request.Email && u.Password == passwordHash, cancellationToken);
-            }
 
-            if (user is null)
-            {
-                return Unauthorized("Usuário ou senha inválidos");
+                if (user is null)
+                {
+                    return Unauthorized("Usuário ou senha inválidos");
+                }
             }
 
             var accessToken = tokenGenerator.GenerateToken(user);
