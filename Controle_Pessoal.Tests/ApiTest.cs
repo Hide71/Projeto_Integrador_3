@@ -1,5 +1,7 @@
 ﻿using Bogus;
+using Controle_Pessoal.Auth;
 using Controle_Pessoal.Context;
+using Controle_Pessoal.Entities;
 using Dapper;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
@@ -36,6 +38,27 @@ namespace Controle_Pessoal.Tests.Fixtures
             where T:class
         {
             return new Faker<T>("pt_BR");
+        }
+
+        protected static User CreateUser(Action<User>? configure = null)
+        {
+            var user = CreateFaker<User>()
+                .RuleFor(x => x.Name, faker => faker.Person.UserName)
+                .RuleFor(x => x.Email, faker => faker.Person.Email)
+                .RuleFor(x => x.ProfilePicture, faker => faker.Person.Website)
+                .RuleFor(x => x.Password, faker => faker.Internet.Password())
+                .Generate();
+
+            configure?.Invoke(user);
+
+            return user;
+        }
+
+        protected void SetRequestUser(User user)
+        {
+            var tokenGenerator = ServiceProvider.GetRequiredService<TokenGenerator>();
+            var accessToken = tokenGenerator.GenerateToken(user);
+            ApiClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
         }
 
         public async ValueTask InitializeAsync()
