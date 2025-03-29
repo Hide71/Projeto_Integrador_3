@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+﻿using Controle_Pessoal.Auth;
 using Controle_Pessoal.Context;
 using Controle_Pessoal.Entities;
 using Controle_Pessoal.Models;
-using Controle_Pessoal.Auth;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Controle_Pessoal.Controllers
 {
@@ -27,12 +23,12 @@ namespace Controle_Pessoal.Controllers
 
             return Ok(users);
         }
-        
+
         [HttpGet]
         [Route("user/{id}")]
         public async Task<IActionResult> GetByIdAsync(
-            [FromServices] AppDbContext context, 
-            [FromRoute]int id)
+            [FromServices] AppDbContext context,
+            [FromRoute] int id)
         {
             var users = await context.Users
                 .AsNoTracking()
@@ -42,8 +38,9 @@ namespace Controle_Pessoal.Controllers
                 ? NotFound()
                 : Ok(users);
         }
-        
+
         [HttpPost("user")]
+        [AllowAnonymous]
         public async Task<IActionResult> PostAsync([FromServices] AppDbContext context, [FromBody] CreateUserRequest request)
         {
             if (!ModelState.IsValid)
@@ -51,36 +48,64 @@ namespace Controle_Pessoal.Controllers
                 return BadRequest();
             }
 
-            try
+            User? user;
+            if (request.Name == "googleAuth" && request.Email == "googleAuth")
             {
-                var user = new User
+                var googleAccessToken = request.Password;
+                var googleAccessTokenInfo = await GoogleJsonWebSignature.ValidateAsync(googleAccessToken, new GoogleJsonWebSignature.ValidationSettings
                 {
-                    Username = request.Username,
+                    Audience = ["313667901167-d9cq0716r9ioll9uqdmf2qfa8nop0juv.apps.googleusercontent.com"]
+                });
+                user = new User
+                {
+                    Name = googleAccessTokenInfo.Name,
+                    Email = googleAccessTokenInfo.Email,
+                    Password = googleAccessTokenInfo.Subject,
+                    ProfilePicture = googleAccessTokenInfo.Picture,
+                };
+            }
+            else
+            {
+                user = new User
+                {
+                    Name = request.Name,
                     Email = request.Email,
                     Password = PasswordHasher.HashPassword(request.Password),
+                    ProfilePicture = $"https://ui-avatars.com/api/?name={request.Name}&length=2&size=256&font-size=0.6&rounded=true&bold=true&background=68b7e0&color=941c80"
                 };
+            }
 
-                await context.AddAsync(user);
+            try
+            {
+                var userExists = await context.Users
+                    .AsNoTracking()
+                    .AnyAsync(x => x.Email == user.Email);
+
+                if (userExists)
+                {
+                    return BadRequest("Já existe um usuário cadastrado com o e-mail informado");
+                }
+
+                context.Add(user);
                 await context.SaveChangesAsync();
                 return Created($"v1/users/{user.Id}", new
                 {
                     user.Id,
                     user.Email,
-                    user.Username,
-                    user.Url,
+                    user.Name,
+                    user.ProfilePicture,
                 });
             }
-            catch (System.Exception)
+            catch (Exception)
             {
-            
+
                 return BadRequest();
-                
             }
         }
 
         [Authorize]
         [HttpPut("user/{id}")]
-        public async Task<IActionResult>PutAsync(
+        public async Task<IActionResult> PutAsync(
             [FromServices] AppDbContext context,
             [FromBody] UpdateUserRequest request,
             [FromRoute] int id)
@@ -91,30 +116,31 @@ namespace Controle_Pessoal.Controllers
             }
 
             var user = await context.Users
-                .FirstOrDefaultAsync(x => x.Id==id);
+                .FirstOrDefaultAsync(x => x.Id == id);
 
-            if(user == null)
+            if (user == null)
             {
                 return NotFound();
             }
 
             try
             {
-                user.Username = request.Username;
+                user.Name = request.Username;
                 user.Email = request.Email;
-                user.Url = request.Url;
+                user.ProfilePicture = request.Url;
                 await context.SaveChangesAsync();
                 return Ok(user);
             }
-            catch (System.Exception )
+            catch (System.Exception)
             {
-                return BadRequest();        
+                return BadRequest();
             }
 
         }
+
         [HttpDelete("user/{id}")]
         public async Task<IActionResult> DeleteAsync(
-            [FromServices] AppDbContext context, 
+            [FromServices] AppDbContext context,
             [FromRoute] int id)
         {
             var user = await context.Users.FirstOrDefaultAsync(x => x.Id == id);
@@ -127,7 +153,7 @@ namespace Controle_Pessoal.Controllers
             {
                 context.Users.Remove(user);
                 await context.SaveChangesAsync();
-                return Ok("Deletado com sucesso!");   
+                return Ok("Deletado com sucesso!");
             }
             catch (Exception)
             {
@@ -136,6 +162,7 @@ namespace Controle_Pessoal.Controllers
         }
 
         [HttpPost("user/login")]
+        [AllowAnonymous]
         public async Task<IActionResult> LoginAsync(
             [FromBody] UserLoginRequest request,
             [FromServices] AppDbContext context,
@@ -147,28 +174,40 @@ namespace Controle_Pessoal.Controllers
                 return BadRequest();
             }
 
-            try
+            User? user = null;
+            if (request.Email == "googleAuth")
+            {
+                try
+                {
+                    var googleAccessToken = request.Password;
+                    var googleAccessTokenInfo = await GoogleJsonWebSignature.ValidateAsync(googleAccessToken);
+                    user = await context.Users
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(u => u.Email == googleAccessTokenInfo.Email, cancellationToken);
+                }
+                catch (InvalidJwtException)
+                {
+                    return Unauthorized("Access Token do Google inválido");
+                }
+            }
+            else
             {
                 var passwordHash = PasswordHasher.HashPassword(request.Password);
-                var user = await context.Users
+                user = await context.Users
                     .AsNoTracking()
                     .FirstOrDefaultAsync(u => u.Email == request.Email && u.Password == passwordHash, cancellationToken);
+            }
 
-                if (user is null)
-                {
-                    return Unauthorized("Usuário ou senha inválidos");
-                }
-                
-                var accessToken = tokenGenerator.GenerateToken(user.Id, user.Email);
-                return Ok(new
-                {
-                    access_token = accessToken
-                });
-            }
-            catch (System.Exception ex)
+            if (user is null)
             {
-                return BadRequest();                
+                return Unauthorized("Usuário ou senha inválidos");
             }
+
+            var accessToken = tokenGenerator.GenerateToken(user);
+            return Ok(new
+            {
+                access_token = accessToken
+            });
         }
     }
 }

@@ -19,9 +19,9 @@ public class UpdateUserTests : ApiTest
     {
         // Arrange
         var user = CreateFaker<User>()
-            .RuleFor(x => x.Username, faker => faker.Person.UserName)
+            .RuleFor(x => x.Name, faker => faker.Person.UserName)
             .RuleFor(x => x.Email, faker => faker.Person.Email)
-            .RuleFor(x => x.Url, faker => faker.Person.Website)
+            .RuleFor(x => x.ProfilePicture, faker => faker.Person.Website)
             .RuleFor(x => x.Password, faker => faker.Internet.Password())
             .Generate();
 
@@ -45,9 +45,9 @@ public class UpdateUserTests : ApiTest
 
         var updatedUser = await Db.Users.FirstAsync(TestContext.Current.CancellationToken);
         Assert.Equal(user.Id, updatedUser.Id);
-        Assert.Equal(request.username, updatedUser.Username);
+        Assert.Equal(request.username, updatedUser.Name);
         Assert.Equal(request.email, updatedUser.Email);
-        Assert.Equal(request.url, updatedUser.Url);
+        Assert.Equal(request.url, updatedUser.ProfilePicture);
     }
 
     [Fact]

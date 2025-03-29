@@ -20,23 +20,23 @@ namespace Controle_Pessoal.Tests.Endpoints.Users
             [
                 new()
                 {
-                    Username = Faker.Person.UserName,
+                    Name = Faker.Person.UserName,
                     Email = Faker.Person.Email,
-                    Url = Faker.Person.Website,
+                    ProfilePicture = Faker.Person.Website,
                     Password = Faker.Internet.Password(),
                 },
                 new()
                 {
-                    Username = Faker.Person.UserName,
+                    Name = Faker.Person.UserName,
                     Email = Faker.Person.Email,
-                    Url = Faker.Person.Website,
+                    ProfilePicture = Faker.Person.Website,
                     Password = Faker.Internet.Password(),
                 },
                 new()
                 {
-                    Username = Faker.Person.UserName,
+                    Name = Faker.Person.UserName,
                     Email = Faker.Person.Email,
-                    Url = Faker.Person.Website,
+                    ProfilePicture = Faker.Person.Website,
                     Password = Faker.Internet.Password(),
                 },
             ];

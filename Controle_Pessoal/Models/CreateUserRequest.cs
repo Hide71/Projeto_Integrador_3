@@ -1,13 +1,11 @@
-using System;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 namespace Controle_Pessoal.Models;
 
 public class CreateUserRequest
 {
     [Required]
-    public string Username { get; set; }
+    public string Name { get; set; }
 
     [Required]
     public string Email { get; set; }

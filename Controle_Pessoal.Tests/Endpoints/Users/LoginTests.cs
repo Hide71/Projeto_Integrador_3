@@ -22,10 +22,10 @@ public class LoginTests : ApiTest
 
         var user = new User
         {
-            Username = Faker.Internet.UserName(),
+            Name = Faker.Internet.UserName(),
             Email = Faker.Person.Email,
             Password = PasswordHasher.HashPassword(userPassword),
-            Url = Faker.Person.Website
+            ProfilePicture = Faker.Person.Website
         };
 
         Db.Users.Add(user);
@@ -57,10 +57,10 @@ public class LoginTests : ApiTest
 
         var user = new User
         {
-            Username = Faker.Internet.UserName(),
+            Name = Faker.Internet.UserName(),
             Email = Faker.Person.Email,
             Password = PasswordHasher.HashPassword(userPassword),
-            Url = Faker.Person.Website
+            ProfilePicture = Faker.Person.Website
         };
 
         Db.Users.Add(user);
@@ -92,10 +92,10 @@ public class LoginTests : ApiTest
 
         var user = new User
         {
-            Username = Faker.Internet.UserName(),
+            Name = Faker.Internet.UserName(),
             Email = Faker.Person.Email,
             Password = PasswordHasher.HashPassword(userPassword),
-            Url = Faker.Person.Website
+            ProfilePicture = Faker.Person.Website
         };
 
         Db.Users.Add(user);

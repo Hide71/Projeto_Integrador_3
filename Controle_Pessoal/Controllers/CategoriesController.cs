@@ -8,40 +8,47 @@ using Microsoft.EntityFrameworkCore;
 using Controle_Pessoal.Context;
 using Controle_Pessoal.Entities;
 using Controle_Pessoal.Models;
+using Microsoft.AspNetCore.Authorization;
+using Controle_Pessoal.Auth;
 
 namespace Controle_Pessoal.Controllers
 {
     [ApiController]
     [Route("v1")]
+    [Authorize]
     public class CategoriesController : ControllerBase
     {
-        private readonly AppDbContext _context;
-
-        public CategoriesController(AppDbContext context)
-        {
-            _context = context;
-        }
-
         [HttpGet]
         [Route("category")]
-        public async Task<IActionResult>GetAsync([FromServices] AppDbContext context)
+        public async Task<IActionResult> GetAsync([FromServices] AppDbContext context)
         {
-            var categories = await context.Categories.AsNoTracking().ToListAsync();
+            var categories = await context.Categories
+                .Where(c => c.UserId == HttpContext.GetUserId())
+                .AsNoTracking()
+                .ToListAsync();
+
             return Ok(categories);
         }
 
         [HttpGet]
         [Route("category/{id}")]
-        public async Task<IActionResult>GetByIdAsync([FromServices] AppDbContext context, 
-        [FromRoute]int id){
-            var categories = await context.Categories
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id);
-            return categories == null? NotFound(): Ok(categories);
+        public async Task<IActionResult> GetByIdAsync(
+            [FromServices] AppDbContext context, 
+            [FromRoute]int id)
+        {
+            var category = await context.Categories
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.UserId == HttpContext.GetUserId() && x.Id == id);
+
+            return category is null
+                ? NotFound()
+                : Ok(category);
         }
 
         [HttpPost("category")]
-        public async Task<IActionResult> PostAsync([FromServices] AppDbContext context, [FromBody] CreateCategoryRequest request)
+        public async Task<IActionResult> PostAsync(
+            [FromServices] AppDbContext context,
+            [FromBody] CreateCategoryRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -53,6 +60,7 @@ namespace Controle_Pessoal.Controllers
                 var category = new Category
                 {
                     CategoryName = request.CategoryName,
+                    UserId = HttpContext.GetUserId()
                 };
 
                 await context.AddAsync(category);
@@ -71,15 +79,15 @@ namespace Controle_Pessoal.Controllers
             [FromBody] UpdateCategoryRequest request,
             [FromRoute] int id)
         {
-            
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
 
-            var category = await context.Categories.FirstOrDefaultAsync(x => x.Id==id);
+            var category = await context.Categories
+                .FirstOrDefaultAsync(x => x.UserId == HttpContext.GetUserId() && x.Id == id);
 
-            if(category == null)
+            if (category is null)
             {
                 return NotFound();
             }
@@ -101,7 +109,12 @@ namespace Controle_Pessoal.Controllers
             [FromServices] AppDbContext context,
             [FromRoute] int id)
         {
-            var category = await context.Categories.FirstOrDefaultAsync(x => x.Id == id);
+            var category = await context.Categories.FirstOrDefaultAsync(x => x.UserId == HttpContext.GetUserId() && x.Id == id);
+            if (category is null)
+            {
+                return NotFound();
+            }
+
             try
             {
                 context.Categories.Remove(category);

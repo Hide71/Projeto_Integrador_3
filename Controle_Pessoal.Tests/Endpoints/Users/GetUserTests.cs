@@ -19,9 +19,9 @@ public class GetUserTests : ApiTest
     {
         // Arrange
         var users = CreateFaker<User>()
-            .RuleFor(x => x.Username, faker => faker.Person.UserName)
+            .RuleFor(x => x.Name, faker => faker.Person.UserName)
             .RuleFor(x => x.Email, faker => faker.Person.Email)
-            .RuleFor(x => x.Url, faker => faker.Person.Website)
+            .RuleFor(x => x.ProfilePicture, faker => faker.Person.Website)
             .RuleFor(x => x.Password, faker => faker.Internet.Password())
             .Generate(3);
 
@@ -36,9 +36,9 @@ public class GetUserTests : ApiTest
 
         var responseBody = await httpResponse.Content.ReadFromJsonAsync<User>(TestContext.Current.CancellationToken);
         Assert.Equal(2, responseBody.Id);
-        Assert.Equal(users[1].Username, responseBody.Username);
+        Assert.Equal(users[1].Name, responseBody.Name);
         Assert.Equal(users[1].Email, responseBody.Email);
-        Assert.Equal(users[1].Url, responseBody.Url);
+        Assert.Equal(users[1].ProfilePicture, responseBody.ProfilePicture);
     }
 
     [Fact]
@@ -46,9 +46,9 @@ public class GetUserTests : ApiTest
     {
         // Arrange
         var users = CreateFaker<User>()
-            .RuleFor(x => x.Username, faker => faker.Person.UserName)
+            .RuleFor(x => x.Name, faker => faker.Person.UserName)
             .RuleFor(x => x.Email, faker => faker.Person.Email)
-            .RuleFor(x => x.Url, faker => faker.Person.Website)
+            .RuleFor(x => x.ProfilePicture, faker => faker.Person.Website)
             .RuleFor(x => x.Password, faker => faker.Internet.Password())
             .Generate(2);
 

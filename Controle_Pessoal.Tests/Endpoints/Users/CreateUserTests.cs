@@ -34,9 +34,9 @@ namespace Controle_Pessoal.Tests.Endpoints.Users
 
             var createdUser = await Db.Users.FirstAsync(TestContext.Current.CancellationToken);
             Assert.Equal(1, createdUser.Id);
-            Assert.Equal(request.username, createdUser.Username);
+            Assert.Equal(request.username, createdUser.Name);
             Assert.Equal(request.email, createdUser.Email);
-            Assert.Null(createdUser.Url);
+            Assert.Null(createdUser.ProfilePicture);
             Assert.Equal(PasswordHasher.HashPassword(request.password), createdUser.Password);
         }
 

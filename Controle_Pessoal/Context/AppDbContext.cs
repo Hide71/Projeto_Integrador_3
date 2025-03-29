@@ -20,10 +20,14 @@ namespace Controle_Pessoal.Context
            base.OnModelCreating(modelBuilder);
 
            modelBuilder.Entity<User>()
-                .Property(p => p.Url)
+                .Property(p => p.ProfilePicture)
                 .IsRequired(false);
 
-           modelBuilder.Entity<Expense>()
+            modelBuilder.Entity<User>()
+                .HasIndex(x => x.Email)
+                .IsUnique();
+
+            modelBuilder.Entity<Expense>()
             .Property(x => x.Description).IsRequired();
 
             modelBuilder.Entity<Expense>()

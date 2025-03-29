@@ -18,9 +18,9 @@ public class DeleteUserTests : ApiTest
     {
         // Arrange
         var users = CreateFaker<User>()
-            .RuleFor(x => x.Username, faker => faker.Person.UserName)
+            .RuleFor(x => x.Name, faker => faker.Person.UserName)
             .RuleFor(x => x.Email, faker => faker.Person.Email)
-            .RuleFor(x => x.Url, faker => faker.Person.Website)
+            .RuleFor(x => x.ProfilePicture, faker => faker.Person.Website)
             .RuleFor(x => x.Password, faker => faker.Internet.Password())
             .Generate(2);
 
@@ -50,9 +50,9 @@ public class DeleteUserTests : ApiTest
     {
         // Arrange
         var users = CreateFaker<User>()
-            .RuleFor(x => x.Username, faker => faker.Person.UserName)
+            .RuleFor(x => x.Name, faker => faker.Person.UserName)
             .RuleFor(x => x.Email, faker => faker.Person.Email)
-            .RuleFor(x => x.Url, faker => faker.Person.Website)
+            .RuleFor(x => x.ProfilePicture, faker => faker.Person.Website)
             .RuleFor(x => x.Password, faker => faker.Internet.Password())
             .Generate(2);
 
