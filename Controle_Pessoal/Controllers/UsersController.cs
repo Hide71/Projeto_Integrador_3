@@ -180,7 +180,10 @@ namespace Controle_Pessoal.Controllers
                 try
                 {
                     var googleAccessToken = request.Password;
-                    var googleAccessTokenInfo = await GoogleJsonWebSignature.ValidateAsync(googleAccessToken);
+                    var googleAccessTokenInfo = await GoogleJsonWebSignature.ValidateAsync(googleAccessToken, new GoogleJsonWebSignature.ValidationSettings
+                    {
+                        Audience = ["313667901167-d9cq0716r9ioll9uqdmf2qfa8nop0juv.apps.googleusercontent.com"]
+                    });
                     user = await context.Users
                         .AsNoTracking()
                         .FirstOrDefaultAsync(u => u.Email == googleAccessTokenInfo.Email, cancellationToken);
