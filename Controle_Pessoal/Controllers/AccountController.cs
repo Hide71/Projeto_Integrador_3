@@ -9,25 +9,35 @@ using Controle_Pessoal.Context;
 using Controle_Pessoal.Entities;
 using Controle_Pessoal.Models;
 using Microsoft.AspNetCore.Authorization;
+using Controle_Pessoal.Auth;
 
 namespace Controle_Pessoal.Controllers
 {
     [ApiController]
     [Route("v1")]
+    [Authorize]
     public class AccountsController : ControllerBase
     {
         [HttpGet("account")]
         public async Task<IActionResult> GetAsync([FromServices] AppDbContext context)
         {
-            var accounts = await context.Accounts.AsNoTracking().ToListAsync();
+            var accounts = await context.Accounts
+                .Where(c => c.UserId == HttpContext.GetUserId())
+                .AsNoTracking()
+                .ToListAsync();
+
             return Ok(accounts);
 
         }
         [HttpGet("account/{id}")]
         public async Task<IActionResult>GetByIdAsync([FromServices] AppDbContext context, [FromRoute] int id)
         {
-            var accounts = await context.Accounts.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
-            return accounts == null? NotFound(): Ok(accounts);
+            var accounts = await context.Accounts
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.UserId == HttpContext.GetUserId() && x.Id == id);
+            return accounts == null 
+            ? NotFound()
+            : Ok(accounts);
         }
         
         [HttpPost("account")]
@@ -43,7 +53,9 @@ namespace Controle_Pessoal.Controllers
                 Description = request.Description,
                 Balance = request.Balance,
                 TypeAccount = request.TypeAccount,
+                UserId = HttpContext.GetUserId()
             };
+
             await context.AddAsync(account);
             await context.SaveChangesAsync();
             return Created(string.Empty, account);
@@ -57,13 +69,19 @@ namespace Controle_Pessoal.Controllers
             }
         }
         [HttpPut("account/{id}")]
-        public async Task<IActionResult> PutAsync([FromServices] AppDbContext context, [FromBody] UpdateAccountRequest request, [FromRoute] int id)
+        public async Task<IActionResult> PutAsync(
+            [FromServices] AppDbContext context, 
+            [FromBody] UpdateAccountRequest request, 
+            [FromRoute] int id)
         {
-            if (!ModelState.IsValid){
+            if (!ModelState.IsValid)
+            {
                 return BadRequest();
             }
-            var account = await context.Accounts.FirstOrDefaultAsync(x => x.Id == id);
-            if (account == null){
+            var account = await context.Accounts
+               .FirstOrDefaultAsync(x => x.UserId == HttpContext.GetUserId() && x.Id == id);
+            if (account == null)
+            {
                 return NotFound();
             }
             try
@@ -81,9 +99,12 @@ namespace Controle_Pessoal.Controllers
             }
         }
         [HttpDelete("account/{id}")]
-        public async Task<IActionResult> DeleteAsync([FromServices] AppDbContext context, [FromRoute] int id)
+        public async Task<IActionResult> DeleteAsync(
+            [FromServices] AppDbContext context, 
+            [FromRoute] int id)
         {
-            var account = await context.Accounts.FirstOrDefaultAsync(x =>x.Id == id);
+            var account = await context.Accounts
+               .FirstOrDefaultAsync(x => x.UserId == HttpContext.GetUserId() && x.Id == id);
             try
             {
                 context.Accounts.Remove(account);
@@ -94,7 +115,7 @@ namespace Controle_Pessoal.Controllers
             catch (Exception)
             {
                 
-                return NotFound();
+                return BadRequest();
             }
 
         }
