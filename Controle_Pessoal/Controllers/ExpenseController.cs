@@ -8,11 +8,15 @@ using Microsoft.EntityFrameworkCore;
 using Controle_Pessoal.Context;
 using Controle_Pessoal.Entities;
 using Controle_Pessoal.Models;
+using Microsoft.AspNetCore.Authorization;
+using Controle_Pessoal.Auth;
 
 namespace Controle_Pessoal.Controllers
 {
     [ApiController]
     [Route("v1")]
+    [Authorize]
+
     public class ExpenseController : ControllerBase
     {
         [HttpPost("expenses")]
@@ -32,14 +36,34 @@ namespace Controle_Pessoal.Controllers
                     Description = request.Description,
                     Amount = request.Amount,
                     Date = request.Date,
-                    UserId = request.UserId,
+                    UserId = HttpContext.GetUserId(),
                     CategoryId = request.CategoryId,
                     AccountId = request.AccountId,
+                    Account = null
                 };
-                
-                await context.AddAsync(expense);
+
+                var account = await context.Accounts.FirstOrDefaultAsync(a => a.Id == request.AccountId);
+                if (expense.Amount < 0)
+                {
+                    account.Balance -= expense.Amount;
+                }
+                else
+                {
+                    account.Balance += expense.Amount;
+                }
+
+                context.Add(expense);
                 await context.SaveChangesAsync();
-                return Created(string.Empty, expense);
+                return Created(string.Empty, new
+                {
+                    expense.Id,
+                    expense.Description,
+                    expense.Amount,
+                    expense.Date,
+                    expense.CategoryId,
+                    expense.AccountId,
+                    expense.UserId
+                });
             }
             catch (Exception )
             {
@@ -52,26 +76,38 @@ namespace Controle_Pessoal.Controllers
         public async Task<IActionResult> Get(
             [FromServices] AppDbContext context)
         {
-            var expenses = await context.Expenses.AsNoTracking().ToListAsync();
+            var expenses = await context.Expenses
+            .Where(c => c.UserId == HttpContext.GetUserId())
+            .AsNoTracking()
+            .ToListAsync();
             return Ok(expenses);
         }
         [HttpGet("expenses/{id}")]
         public async Task<IActionResult> GetByIdAsync(
             [FromServices] AppDbContext context, 
-            [FromRoute] int id) {
-            var expenses = await context.Expenses.AsNoTracking().FirstOrDefaultAsync(x=> x.Id == id);
-            return  expenses == null? NotFound() : Ok(expenses);
+            [FromRoute] int id) 
+            {
+            var expenses = await context.Expenses
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.UserId == HttpContext.GetUserId() && x.Id == id);
+            return  expenses == null
+            ? NotFound() 
+            : Ok(expenses);
         }
         [HttpPut("expenses/{id}")]
         public async Task<IActionResult> PutAsync(
             [FromServices] AppDbContext context,
             [FromRoute] int id,
-            [FromBody] UpdateExpenseRequest request){
-                if(!ModelState.IsValid){
+            [FromBody] UpdateExpenseRequest request)
+            {
+                if(!ModelState.IsValid)
+                {
                     return BadRequest();
                 }
-                var expense = await context.Expenses.FirstOrDefaultAsync(x => x.Id == id);
-                if(expense == null){
+                var expense = await context.Expenses
+               .FirstOrDefaultAsync(x => x.UserId == HttpContext.GetUserId() && x.Id == id);
+                if(expense == null)
+                {
                     return NotFound();
                 }
                 try
@@ -97,7 +133,8 @@ namespace Controle_Pessoal.Controllers
             [FromServices] AppDbContext context,
             [FromRoute] int id)
         {
-            var expense = await context.Expenses.FirstOrDefaultAsync(x => x.Id == id);
+            var expense = await context.Expenses
+            .FirstOrDefaultAsync(x => x.UserId == HttpContext.GetUserId() && x.Id == id);
             try
             {
                 context.Expenses.Remove(expense);

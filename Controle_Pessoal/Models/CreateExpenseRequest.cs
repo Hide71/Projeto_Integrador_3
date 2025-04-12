@@ -14,9 +14,6 @@ public class CreateExpenseRequest
     public DateOnly Date { get; set; }
 
     [Required]
-    public int UserId { get; set;}
-
-    [Required]
     public int CategoryId { get; set;} 
     
     [Required]

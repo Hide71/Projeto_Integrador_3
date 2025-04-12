@@ -109,7 +109,8 @@ namespace Controle_Pessoal.Controllers
             [FromServices] AppDbContext context,
             [FromRoute] int id)
         {
-            var category = await context.Categories.FirstOrDefaultAsync(x => x.UserId == HttpContext.GetUserId() && x.Id == id);
+            var category = await context.Categories
+            .FirstOrDefaultAsync(x => x.UserId == HttpContext.GetUserId() && x.Id == id);
             if (category is null)
             {
                 return NotFound();

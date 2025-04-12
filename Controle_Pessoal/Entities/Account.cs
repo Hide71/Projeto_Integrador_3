@@ -10,7 +10,7 @@ namespace Controle_Pessoal.Entities
         public TypeAccount TypeAccount {get; set; }
         public int UserId { get; set;}
 
-        public ICollection<Expense> Expenses { get; set; }
+        public virtual ICollection<Expense> Expenses { get; set; }
         public User User { get; set; }
     }
      public enum TypeAccount {corrente, poupanca, carteira }

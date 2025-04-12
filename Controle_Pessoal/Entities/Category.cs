@@ -8,7 +8,7 @@ namespace Controle_Pessoal.Entities
         public string CategoryName { get; set; }
         public int UserId { get; set;}               
 
-        public ICollection<Expense> Expenses { get; set; }
+        public virtual ICollection<Expense> Expenses { get; set; }
         public User User { get; set; }
     }
 }
